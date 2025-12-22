@@ -1,0 +1,32 @@
+name: photopin
+description: "PhotoPin: Your Memories Mapped"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Icons
+  cupertino_icons: ^1.0.8
+
+  # SVG Support (for vectors)
+  flutter_svg: ^2.0.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+
+  # ----------------------------------------------------------
+  # ASSETS
+  # ----------------------------------------------------------
+  assets:
+    - assets/gear.png

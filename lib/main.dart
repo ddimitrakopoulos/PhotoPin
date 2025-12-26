@@ -1,22 +1,33 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart'; // Import the home screen
+
+import 'core/app_theme.dart';
+import 'core/theme_controller.dart';
+import 'features/root/presentation/root_nav.dart';
 
 void main() {
-  runApp(const PhotoPinApp());
+  final themeController = ThemeController();
+  runApp(PhotoPinApp(themeController: themeController));
 }
 
 class PhotoPinApp extends StatelessWidget {
-  const PhotoPinApp({super.key});
+  const PhotoPinApp({super.key, required this.themeController});
+
+  final ThemeController themeController;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'PhotoPin',
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color.fromARGB(255, 18, 32, 47),
-      ),
-      home: const HomeScreen(),
+    return AnimatedBuilder(
+      animation: themeController,
+      builder: (context, _) {
+        return MaterialApp(
+          title: 'PhotoPin',
+          debugShowCheckedModeBanner: false,
+          theme: buildLightTheme(),
+          darkTheme: buildDarkTheme(),
+          themeMode: themeController.themeMode,
+          home: RootNav(themeController: themeController),
+        );
+      },
     );
   }
 }

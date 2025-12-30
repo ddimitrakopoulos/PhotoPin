@@ -2,9 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import '../../../../generated/assets.dart';
 import '../../domain/memory.dart';
-import 'memory_meta_row.dart';
 
 class MemoryCard extends StatelessWidget {
   const MemoryCard({super.key, required this.memory, required this.onTap});
@@ -37,56 +35,99 @@ class MemoryCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     final cardColor = isDark ? const Color(0xFF181818) : Colors.white;
+    final textColor = isDark ? Colors.white : const Color(0xFF1E1E1E);
+    final dateLocationBgColor = isDark ? const Color(0xFF2A2A2A) : const Color(0xFFEAEAEA);
 
     return InkWell(
-      borderRadius: BorderRadius.circular(28),
+      borderRadius: BorderRadius.circular(16),
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(12),
+        height: 144,
         decoration: BoxDecoration(
           color: cardColor,
-          borderRadius: BorderRadius.circular(28),
-          boxShadow: isDark
-              ? []
-              : [
-                  BoxShadow(
-                    offset: const Offset(0, 10),
-                    blurRadius: 30,
-                    color: Colors.black.withAlpha(15),
-                  ),
-                ],
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0x19000000),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+              spreadRadius: 0,
+            ),
+          ],
         ),
         child: Row(
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(22),
-              child: _memoryImage(memory),
+            // Image on the left
+            Padding(
+              padding: const EdgeInsets.only(left: 9, top: 12, bottom: 12),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(0),
+                child: _memoryImage(memory),
+              ),
             ),
-            const SizedBox(width: 14),
+            // Right side content (Date/Location box + Caption)
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    memory.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: isDark ? Colors.white : Colors.black,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 16, right: 10, top: 12, bottom: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Date/Location box
+                    Container(
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: dateLocationBgColor,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            _formatDate(memory.date),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: textColor,
+                              fontSize: 14,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Text(
+                              memory.location,
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: textColor,
+                                fontSize: 14,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  MemoryMetaRow(
-                    iconAsset: Assets.svgCalendar,
-                    text: _formatDate(memory.date),
-                  ),
-                  const SizedBox(height: 4),
-                  MemoryMetaRow(
-                    iconAsset: Assets.svgLocation,
-                    text: memory.location,
-                  ),
-                ],
+                    // Spacer
+                    const SizedBox(height: 11),
+                    // Caption
+                    Expanded(
+                      child: Text(
+                        memory.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 28,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -103,14 +144,14 @@ class MemoryCard extends StatelessWidget {
       if (imageFile.existsSync()) {
         return Image.file(
           imageFile,
-          width: 84,
-          height: 84,
+          width: 120,
+          height: 120,
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
             // Fallback if image can't be loaded
             return Container(
-              width: 84,
-              height: 84,
+              width: 120,
+              height: 120,
               color: Colors.grey.shade300,
               child: Icon(Icons.broken_image, color: Colors.grey.shade600),
             );
@@ -119,13 +160,13 @@ class MemoryCard extends StatelessWidget {
       } else {
         // File doesn't exist - show missing image placeholder
         return Container(
-          width: 84,
-          height: 84,
+          width: 120,
+          height: 120,
           color: Colors.grey.shade300,
           child: Icon(Icons.image_not_supported, color: Colors.grey.shade600),
         );
       }
     }
-    return Image.asset(m.imageAsset, width: 84, height: 84, fit: BoxFit.cover);
+    return Image.asset(m.imageAsset, width: 120, height: 120, fit: BoxFit.cover);
   }
 }

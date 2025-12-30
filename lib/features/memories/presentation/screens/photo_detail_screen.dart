@@ -221,7 +221,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                   children: [
                     // Photo
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(32),
+                      borderRadius: BorderRadius.circular(0),
                       child: _buildPhoto(),
                     ),
                     const SizedBox(height: 16),
@@ -303,7 +303,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
 
                     // Map
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(32),
+                      borderRadius: BorderRadius.circular(0),
                       child: SizedBox(
                         height: 260,
                         child: FlutterMap(

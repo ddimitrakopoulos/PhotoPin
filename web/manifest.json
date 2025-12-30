@@ -1,6 +1,6 @@
 {
-    "name": "photopin",
-    "short_name": "photopin",
+    "name": "PhotoPin",
+    "short_name": "PhotoPin",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

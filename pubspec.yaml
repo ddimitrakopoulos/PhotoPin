@@ -1,5 +1,5 @@
-name: photopin
-description: "A new Flutter project."
+name: PhotoPin
+description: "Your Memories ... Mapped"
 publish_to: 'none'
 environment:
   sdk: ^3.9.2
@@ -37,4 +37,4 @@ flutter:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/app_icons/app_icon.png"  # <-- your PNG icon here
+  image_path: "assets/app_icons/app_icon.png"

@@ -1,4 +1,4 @@
-package com.example.photopin
+package com.example.PhotoPin
 
 import io.flutter.embedding.android.FlutterActivity
 

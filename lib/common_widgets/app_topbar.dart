@@ -4,11 +4,15 @@ import 'package:flutter_svg/flutter_svg.dart';
 class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onSettingsPressed;
   final Widget? actionButton;
+  final String? title;
+  final bool centerTitle;
 
   const AppTopBar({
     super.key,
     this.onSettingsPressed,
     this.actionButton,
+    this.title,
+    this.centerTitle = true,
   });
 
   @override
@@ -41,33 +45,44 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
               // Left Spacer
               const SizedBox(width: 56),
 
-              // Center: Title + Pin
+              // Title + Pin (centered)
               Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'PhotoPin',
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 32,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w800,
+                child: title != null && title != 'PhotoPin'
+                    ? Center(
+                        child: Text(
+                          title!,
+                          style: TextStyle(
+                            color: textColor,
+                            fontSize: 32,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'PhotoPin',
+                            style: TextStyle(
+                              color: textColor,
+                              fontSize: 32,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          SizedBox(
+                            width: 18,
+                            height: 32,
+                            child: SvgPicture.asset(
+                              'assets/svg/pin.svg',
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    SizedBox(
-                      width: 18,
-                      height: 32,
-                      // CHANGED: Loading from file now
-                      child: SvgPicture.asset(
-                        'assets/svg/pin.svg',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ],
-                ),
               ),
 
               // Right: Gear Icon

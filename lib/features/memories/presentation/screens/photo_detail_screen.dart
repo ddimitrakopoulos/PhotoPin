@@ -3,11 +3,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:photopin/features/memories/presentation/widgets/memory_meta_row.dart';
 
 import '../../domain/memory.dart';
 import '../controllers/memories_controller.dart';
-import 'package:photopin/gen/assets.gen.dart';
 
 class PhotoDetailScreen extends StatefulWidget {
   const PhotoDetailScreen({
@@ -183,28 +181,30 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
             // Header
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Stack(
+              child: Row(
                 children: [
-                  // Centered text - fixed position
-                  Center(
-                    child: Text(
-                      'Photo Detail',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? Colors.white : Colors.black,
-                      ),
-                    ),
+                  // X button aligned to the left
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    color: const Color(0xFFFF5A5F), // App orange color
+                    iconSize: 32,
+                    onPressed: () => Navigator.of(context).pop(),
                   ),
-                  // X button positioned to the left of centered text
-                  Positioned(
-                    left: MediaQuery.of(context).size.width / 2 - 130, // More to the left
-                    top: -7.5,
-                    child: IconButton(
-                      icon: const Icon(Icons.close),
-                      color: const Color(0xFFFF5A5F), // App orange color
-                      iconSize: 32,
-                      onPressed: () => Navigator.of(context).pop(),
+                  // Spacer to push text to center
+                  Expanded(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 48), // Compensate for X button width
+                        child: Text(
+                          'Photo Detail',
+                          style: TextStyle(
+                            color: isDark ? Colors.white : const Color(0xFF1E1E1E),
+                            fontSize: 32,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -225,38 +225,81 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                       child: _buildPhoto(),
                     ),
                     const SizedBox(height: 16),
-                    Text(
-                      memory.title,
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: isDark ? Colors.white : Colors.black,
+                    Container(
+                      width: double.infinity,
+                      height: 180,
+                      clipBehavior: Clip.antiAlias,
+                      decoration: ShapeDecoration(
+                        color: const Color(0xFFFF6F61),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        shadows: const [
+                          BoxShadow(
+                            color: Color(0x19000000),
+                            blurRadius: 6,
+                            offset: Offset(0, -2),
+                            spreadRadius: 0,
+                          )
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    MemoryMetaRow(
-                      iconAsset: Assets.svg.calender,
-                      text: _formatDate(memory.date),
-                    ),
-                    const SizedBox(height: 4),
-                    MemoryMetaRow(
-                      iconAsset: Assets.svg.location,
-                      text: memory.location,
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            left: 0,
+                            top: 0,
+                            right: 0,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Text(
+                                _formatDate(memory.date),
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: 0,
+                            top: 41,
+                            right: 0,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Text(
+                                memory.location,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: 8,
+                            top: 81,
+                            right: 8,
+                            bottom: 8,
+                            child: Text(
+                              memory.title,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 32,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 20),
-                    Divider(
-                      color: isDark
-                          ? Colors.white.withAlpha(31)
-                          : Colors.black.withAlpha(15),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Map Location:',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white : Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
 
                     // Map
                     ClipRRect(
@@ -274,7 +317,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                           children: [
                             TileLayer(
                               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                              userAgentPackageName: 'com.example.photopin',
+                              userAgentPackageName: 'com.example.PhotoPin',
                             ),
                             MarkerLayer(
                               markers: [

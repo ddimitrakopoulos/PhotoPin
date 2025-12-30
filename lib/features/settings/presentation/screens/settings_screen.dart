@@ -27,28 +27,30 @@ class SettingsScreen extends StatelessWidget {
                 // Header
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  child: Stack(
+                  child: Row(
                     children: [
-                      // Centered text - fixed position
-                      Center(
-                        child: Text(
-                          'Settings',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            color: isDark ? Colors.white : Colors.black,
-                          ),
-                        ),
+                      // X button aligned to the left
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        color: const Color(0xFFFF5A5F), // App orange color
+                        iconSize: 32,
+                        onPressed: () => Navigator.of(context).pop(),
                       ),
-                      // X button positioned to the left of centered text
-                      Positioned(
-                        left: MediaQuery.of(context).size.width / 2 - 120, // More to the right
-                        top: -7.5,
-                        child: IconButton(
-                          icon: const Icon(Icons.close),
-                          color: const Color(0xFFFF5A5F), // App orange color
-                          iconSize: 32,
-                          onPressed: () => Navigator.of(context).pop(),
+                      // Spacer to push text to center
+                      Expanded(
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 48), // Compensate for X button width
+                            child: Text(
+                              'Settings',
+                              style: TextStyle(
+                                color: isDark ? Colors.white : const Color(0xFF1E1E1E),
+                                fontSize: 32,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ],

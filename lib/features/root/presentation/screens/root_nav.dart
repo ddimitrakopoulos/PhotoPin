@@ -68,6 +68,7 @@ class _RootNavState extends State<RootNav> {
 
     return Scaffold(
       appBar: AppTopBar(
+        title: _currentIndex == 1 ? 'My Memories' : null,
         onSettingsPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(

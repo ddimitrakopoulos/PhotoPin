@@ -170,7 +170,7 @@ class _MapScreenState extends State<MapScreen> {
                   TileLayer(
                     urlTemplate:
                         "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-                    userAgentPackageName: 'com.example.photopin',
+                    userAgentPackageName: 'com.example.PhotoPin',
                   ),
                 ],
               ),
@@ -189,7 +189,7 @@ class _MapScreenState extends State<MapScreen> {
                   TileLayer(
                     urlTemplate:
                         "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-                    userAgentPackageName: 'com.example.photopin',
+                    userAgentPackageName: 'com.example.PhotoPin',
                   ),
                 ],
               ),

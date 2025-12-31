@@ -42,7 +42,6 @@ class MemoryCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       onTap: onTap,
       child: Container(
-        height: 144,
         decoration: BoxDecoration(
           color: cardColor,
           borderRadius: BorderRadius.circular(16),
@@ -55,8 +54,10 @@ class MemoryCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Row(
-          children: [
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
             // Image on the left
             Padding(
               padding: const EdgeInsets.only(left: 9, top: 12, bottom: 12),
@@ -113,17 +114,16 @@ class MemoryCard extends StatelessWidget {
                     // Spacer
                     const SizedBox(height: 11),
                     // Caption
-                    Expanded(
-                      child: Text(
-                        memory.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: textColor,
-                          fontSize: 28,
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w400,
-                        ),
+                    Text(
+                      memory.title,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 28,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ],
@@ -131,6 +131,7 @@ class MemoryCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
         ),
       ),
     );

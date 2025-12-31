@@ -6,7 +6,7 @@ import '../../../generated/assets.dart';
 import '../domain/memory.dart';
 
 class MemoryLocalDataSource {
-  static const _keyMemories = 'memories_v1';
+  static const _keyMemories = 'memories_v2';
 
   Future<List<Memory>> loadMemories() async {
     final prefs = await SharedPreferences.getInstance();
@@ -42,7 +42,7 @@ class MemoryLocalDataSource {
       ),
       Memory(
         id: '2',
-        title: 'Στο σπιτι της γιαγιας',
+        title: 'Στο σπιτι της γιαγιας με μια μεγαλη λεζαντα για να δουμε πως θα φανει',
         date: DateTime(2025, 6, 16),
         location: 'Zographou, Athens, Greece',
         imageAsset: Assets.imagesDummyImage2,
@@ -60,7 +60,7 @@ class MemoryLocalDataSource {
       ),
       Memory(
         id: '4',
-        title: 'Ειχα μεθυσει',
+        title: 'Ειχα μεθυσει και αυτη ειναι μια παρα πολυ μεγαλη λεζαντα που θα πρεπει να κοπει γιατι ειναι πραγματικα τεραστια και δεν χωραει σε δυο γραμμες οποτε θα βαλουμε τρεις τελειες στο τελος',
         date: DateTime(2025, 5, 24),
         location: 'Ilisia, Athens, Greece',
         imageAsset: Assets.imagesDummyImage4,

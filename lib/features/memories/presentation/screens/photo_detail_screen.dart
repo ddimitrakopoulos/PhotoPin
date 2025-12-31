@@ -227,7 +227,6 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                     const SizedBox(height: 16),
                     Container(
                       width: double.infinity,
-                      height: 180,
                       clipBehavior: Clip.antiAlias,
                       decoration: ShapeDecoration(
                         color: const Color(0xFFFF6F61),
@@ -243,51 +242,36 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                           )
                         ],
                       ),
-                      child: Stack(
-                        children: [
-                          Positioned(
-                            left: 0,
-                            top: 0,
-                            right: 0,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: Text(
-                                _formatDate(memory.date),
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontFamily: 'Inter',
-                                  fontWeight: FontWeight.w400,
-                                ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _formatDate(memory.date),
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w400,
                               ),
                             ),
-                          ),
-                          Positioned(
-                            left: 0,
-                            top: 41,
-                            right: 0,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Text(
-                                memory.location,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontFamily: 'Inter',
-                                  fontWeight: FontWeight.w400,
-                                ),
+                            const SizedBox(height: 8),
+                            Text(
+                              memory.location,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w400,
                               ),
                             ),
-                          ),
-                          Positioned(
-                            left: 8,
-                            top: 81,
-                            right: 8,
-                            bottom: 8,
-                            child: Text(
+                            const SizedBox(height: 12),
+                            Text(
                               memory.title,
+                              textAlign: TextAlign.center,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 32,
@@ -295,8 +279,8 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),

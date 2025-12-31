@@ -69,6 +69,8 @@ class MemoriesScreen extends StatelessWidget {
                 Expanded(
                   child: ListView.separated(
                     padding: const EdgeInsets.only(bottom: 24),
+                    // Performance: Add caching for faster scrolling
+                    cacheExtent: 500,
                     itemBuilder: (context, index) {
                       final memory = memories[index];
                       return MemoryCard(

@@ -27,29 +27,38 @@ class SaveMemoryScreen extends StatefulWidget {
 class _SaveMemoryScreenState extends State<SaveMemoryScreen> {
   final captionController = TextEditingController();
   bool _saving = false;
-  late stt.SpeechToText _speech;
+  stt.SpeechToText? _speech;
   bool _isListening = false;
   bool _speechAvailable = false;
+  bool _speechInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _speech = stt.SpeechToText();
-    _initSpeech();
+    // Don't initialize speech immediately - wait until user needs it
   }
 
   Future<void> _initSpeech() async {
-    _speechAvailable = await _speech.initialize(
+    if (_speechInitialized) return;
+    
+    _speech = stt.SpeechToText();
+    _speechAvailable = await _speech!.initialize(
       onError: (error) => print('Speech recognition error: $error'),
       onStatus: (status) => print('Speech recognition status: $status'),
     );
-    setState(() {});
+    _speechInitialized = true;
+    if (mounted) setState(() {});
   }
 
   void _startListening() async {
-    if (!_speechAvailable) return;
+    // Initialize speech on first use
+    if (!_speechInitialized) {
+      await _initSpeech();
+    }
     
-    await _speech.listen(
+    if (!_speechAvailable || _speech == null) return;
+    
+    await _speech!.listen(
       onResult: (result) {
         setState(() {
           captionController.text = result.recognizedWords;
@@ -60,7 +69,8 @@ class _SaveMemoryScreenState extends State<SaveMemoryScreen> {
   }
 
   void _stopListening() async {
-    await _speech.stop();
+    if (_speech == null) return;
+    await _speech!.stop();
     setState(() => _isListening = false);
   }
 
@@ -163,7 +173,7 @@ class _SaveMemoryScreenState extends State<SaveMemoryScreen> {
   @override
   void dispose() {
     captionController.dispose();
-    _speech.stop();
+    _speech?.stop();
     super.dispose();
   }
 
@@ -285,7 +295,7 @@ class _SaveMemoryScreenState extends State<SaveMemoryScreen> {
                             : (isDark ? Colors.white70 : Colors.black54),
                         size: 28,
                       ),
-                      onPressed: _speechAvailable ? _toggleListening : null,
+                      onPressed: _toggleListening,
                       padding: const EdgeInsets.all(8),
                     ),
                   ],

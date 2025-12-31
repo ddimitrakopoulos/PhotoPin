@@ -170,6 +170,9 @@ class MemoryCard extends StatelessWidget {
           width: 120,
           height: 120,
           fit: BoxFit.cover,
+          // Performance: cache images
+          cacheWidth: 240, // 2x for retina displays
+          cacheHeight: 240,
           errorBuilder: (context, error, stackTrace) {
             // Fallback if image can't be loaded
             return Container(
@@ -190,6 +193,14 @@ class MemoryCard extends StatelessWidget {
         );
       }
     }
-    return Image.asset(m.imageAsset, width: 120, height: 120, fit: BoxFit.cover);
+    return Image.asset(
+      m.imageAsset,
+      width: 120,
+      height: 120,
+      fit: BoxFit.cover,
+      // Performance: cache images
+      cacheWidth: 240,
+      cacheHeight: 240,
+    );
   }
 }

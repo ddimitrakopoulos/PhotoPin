@@ -38,18 +38,32 @@ class _MapScreenState extends State<MapScreen> {
     super.initState();
 
     _initLocation();
+    
+    // Listen to memories changes to trigger rebuilds
+    widget.memoriesController.addListener(_onMemoriesChanged);
 
     _mapSub = _mapController.mapEventStream.listen((event) {
       if (event is MapEventMoveStart &&
           event.source != MapEventSource.mapController) {
         _followMe = false;
       }
-      if (mounted) setState(() {});
+      // Rebuild on map events to update overlay positions
+      if (event is MapEventMove || 
+          event is MapEventRotate || 
+          event is MapEventFlingAnimationEnd ||
+          event is MapEventDoubleTapZoomEnd) {
+        if (mounted) setState(() {});
+      }
     });
+  }
+
+  void _onMemoriesChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
+    widget.memoriesController.removeListener(_onMemoriesChanged);
     _mapSub?.cancel();
     _positionSub?.cancel();
     super.dispose();
@@ -137,32 +151,30 @@ class _MapScreenState extends State<MapScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     
-    return AnimatedBuilder(
-      animation: widget.memoriesController,
-      builder: (_, _) {
-        if (widget.memoriesController.isLoading || !_hasInitialFix) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    // Build without AnimatedBuilder - only rebuild on state changes
+    if (widget.memoriesController.isLoading || !_hasInitialFix) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-        final memories = widget.memoriesController.memories;
+    final memories = widget.memoriesController.memories;
 
-        return Stack(
-          children: [
-            // ───── GRAYSCALE MAP (BACKGROUND) ─────
-            ColorFiltered(
-              colorFilter: const ui.ColorFilter.matrix([
-                // Complete desaturation (grayscale)
-                0.2126, 0.7152, 0.0722, 0, 0,
-                0.2126, 0.7152, 0.0722, 0, 0,
-                0.2126, 0.7152, 0.0722, 0, 0,
-                0,      0,      0,      1, 0,
-              ]),
-              child: FlutterMap(
-                mapController: _mapController,
-                options: MapOptions(
-                  initialCenter: _currentPosition!,
-                  initialZoom: 17,
-                  minZoom: 3,
+    return Stack(
+      children: [
+        // ───── GRAYSCALE MAP (BACKGROUND) ─────
+        ColorFiltered(
+          colorFilter: const ui.ColorFilter.matrix([
+            // Complete desaturation (grayscale)
+            0.2126, 0.7152, 0.0722, 0, 0,
+            0.2126, 0.7152, 0.0722, 0, 0,
+            0.2126, 0.7152, 0.0722, 0, 0,
+            0,      0,      0,      1, 0,
+          ]),
+          child: FlutterMap(
+            mapController: _mapController,
+            options: MapOptions(
+              initialCenter: _currentPosition!,
+              initialZoom: 17,
+              minZoom: 3,
                   maxZoom: 25,
                   onMapReady: () {
                     _mapReady = true;
@@ -175,6 +187,10 @@ class _MapScreenState extends State<MapScreen> {
                     urlTemplate:
                         "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
                     userAgentPackageName: 'com.example.PhotoPin',
+                    maxNativeZoom: 19,
+                    // Performance optimizations
+                    tileProvider: NetworkTileProvider(),
+                    keepBuffer: 2,
                   ),
                 ],
               ),
@@ -226,6 +242,10 @@ class _MapScreenState extends State<MapScreen> {
                       urlTemplate:
                           "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
                       userAgentPackageName: 'com.example.PhotoPin',
+                      maxNativeZoom: 19,
+                      // Performance optimizations
+                      tileProvider: NetworkTileProvider(),
+                      keepBuffer: 2,
                     ),
                   ],
                 ),
@@ -322,8 +342,6 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ],
         );
-      },
-    );
   }
 }
 
@@ -370,7 +388,10 @@ class _SpotlightClipper extends CustomClipper<ui.Path> {
   }
 
   @override
-  bool shouldReclip(_) => true;
+  bool shouldReclip(covariant _SpotlightClipper oldClipper) {
+    // Always reclip when camera moves to keep circles positioned over waypoints
+    return true;
+  }
 }
 
 // ───────────────────────── INVERSE SPOTLIGHT CLIPPER ─────────────────────────
@@ -422,7 +443,10 @@ class _InverseSpotlightClipper extends CustomClipper<ui.Path> {
   }
 
   @override
-  bool shouldReclip(_) => true;
+  bool shouldReclip(covariant _InverseSpotlightClipper oldClipper) {
+    // Always reclip when camera moves to keep circles positioned over waypoints
+    return true;
+  }
 }
 
 // ───────────────────────── RED DOTS ─────────────────────────

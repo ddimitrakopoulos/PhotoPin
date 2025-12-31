@@ -59,6 +59,8 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
           imageFile,
           width: double.infinity,
           fit: BoxFit.cover,
+          // Performance: cache images for smoother rendering
+          cacheWidth: 1200, // reasonable size for detail view
           errorBuilder: (context, error, stackTrace) {
             // Fallback if image can't be loaded
             return Container(

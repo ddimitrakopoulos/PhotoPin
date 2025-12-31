@@ -137,28 +137,30 @@ class _SaveMemoryScreenState extends State<SaveMemoryScreen> {
               // Header
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Stack(
+                child: Row(
                   children: [
-                    // Centered text - fixed position
-                    Center(
-                      child: Text(
-                        'Save Memory',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? Colors.white : Colors.black,
-                        ),
-                      ),
+                    // X button aligned to the left
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      color: const Color(0xFFFF5A5F), // App orange color
+                      iconSize: 32,
+                      onPressed: () => Navigator.of(context).pop(),
                     ),
-                    // X button positioned to the left of centered text
-                    Positioned(
-                      left: MediaQuery.of(context).size.width / 2 - 160, // More to the left
-                      top: -7.5,
-                      child: IconButton(
-                        icon: const Icon(Icons.close),
-                        color: const Color(0xFFFF5A5F), // App orange color
-                        iconSize: 32,
-                        onPressed: () => Navigator.of(context).pop(),
+                    // Spacer to push text to center
+                    Expanded(
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 48), // Compensate for X button width
+                          child: Text(
+                            'Add Memory',
+                            style: TextStyle(
+                              color: isDark ? Colors.white : const Color(0xFF1E1E1E),
+                              fontSize: 32,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -177,47 +179,72 @@ class _SaveMemoryScreenState extends State<SaveMemoryScreen> {
               ),
               const SizedBox(height: 24),
 
-              Text(
-                'Add Caption:',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              TextField(
-                controller: captionController,
-                maxLines: 5,
-                decoration: InputDecoration(
-                  hintText: 'Type Here..',
-                  filled: true,
-                  fillColor: isDark
-                      ? Colors.white.withAlpha(15)
-                      : Colors.black.withAlpha(8),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide.none,
+              // Caption input field (Figma design - theme aware)
+              Container(
+                width: double.infinity,
+                height: 52,
+                decoration: ShapeDecoration(
+                  color: isDark ? const Color(0xFF252525) : Colors.white,
+                  shape: RoundedRectangleBorder(
+                    side: const BorderSide(
+                      width: 1,
+                      color: Color(0xFF79747E),
+                    ),
+                    borderRadius: BorderRadius.circular(4),
                   ),
-                  contentPadding: const EdgeInsets.all(16),
+                  shadows: const [
+                    BoxShadow(
+                      color: Color(0x19000000),
+                      blurRadius: 6,
+                      offset: Offset(0, -2),
+                      spreadRadius: 0,
+                    ),
+                  ],
+                ),
+                child: TextField(
+                  controller: captionController,
+                  maxLines: 1,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : const Color(0xFF1E1E1E),
+                    fontSize: 32,
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w400,
+                    height: 1.25,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Add a caption ...',
+                    hintStyle: TextStyle(
+                      color: isDark 
+                          ? Colors.white.withOpacity(0.6) 
+                          : const Color(0xFF1E1E1E).withOpacity(0.6),
+                      fontSize: 32,
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w400,
+                      height: 1.25,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
 
-              // Save Memory button (centered)
+              // Save button
               Center(
                 child: SizedBox(
                   width: double.infinity,
+                  height: 48,
                   child: ElevatedButton(
                     onPressed: _saving ? null : _saveMemory,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF5A5F),
+                      backgroundColor: const Color(0xFFFF6F61),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(100),
                       ),
+                      elevation: 2,
+                      shadowColor: const Color(0x4C000000),
                     ),
                     child: _saving
                         ? const SizedBox(
@@ -228,7 +255,17 @@ class _SaveMemoryScreenState extends State<SaveMemoryScreen> {
                               color: Colors.white,
                             ),
                           )
-                        : const Text('Save Memory'),
+                        : const Text(
+                            'Save',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 32,
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w500,
+                              height: 0.63,
+                              letterSpacing: 0.10,
+                            ),
+                          ),
                   ),
                 ),
               ),

@@ -134,6 +134,9 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return AnimatedBuilder(
       animation: widget.memoriesController,
       builder: (_, _) {
@@ -148,6 +151,7 @@ class _MapScreenState extends State<MapScreen> {
             // ───── GRAYSCALE MAP (BACKGROUND) ─────
             ColorFiltered(
               colorFilter: const ui.ColorFilter.matrix([
+                // Complete desaturation (grayscale)
                 0.2126, 0.7152, 0.0722, 0, 0,
                 0.2126, 0.7152, 0.0722, 0, 0,
                 0.2126, 0.7152, 0.0722, 0, 0,
@@ -176,24 +180,72 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ),
 
+            // ───── GREY OVERLAY (EVERYWHERE EXCEPT SPOTLIGHTS) ─────
+            IgnorePointer(
+              child: ClipPath(
+                clipper: _InverseSpotlightClipper(
+                  mapController: _mapController,
+                  memories: memories,
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Container(
+                  color: isDark 
+                      ? Colors.black.withOpacity(0.6)  // Dark mode: nearly black for high contrast
+                      : Colors.grey.withOpacity(0.6),   // Light mode: medium grey
+                ),
+              ),
+            ),
+
             // ───── NORMAL MAP (VISIBLE ONLY INSIDE SPOTLIGHTS) ─────
             ClipPath(
               clipper: _SpotlightClipper(
                 mapController: _mapController,
                 memories: memories,
               ),
-              child: FlutterMap(
-                mapController: _mapController,
-                options: const MapOptions(),
-                children: [
-                  TileLayer(
-                    urlTemplate:
-                        "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-                    userAgentPackageName: 'com.example.PhotoPin',
-                  ),
-                ],
+              child: ColorFiltered(
+                colorFilter: isDark 
+                  ? const ui.ColorFilter.matrix([
+                      // Dark mode: High contrast + High saturation
+                      2.5, -0.75, -0.75, 0, -20,
+                      -0.75, 2.5, -0.75, 0, -20,
+                      -0.75, -0.75, 2.5, 0, -20,
+                      0, 0, 0, 1, 0,
+                    ])
+                  : const ui.ColorFilter.matrix([
+                      // Light mode: High saturation only
+                      2.0, -0.5, -0.5, 0, 0,
+                      -0.5, 2.0, -0.5, 0, 0,
+                      -0.5, -0.5, 2.0, 0, 0,
+                      0, 0, 0, 1, 0,
+                    ]),
+                child: FlutterMap(
+                  mapController: _mapController,
+                  options: const MapOptions(),
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                      userAgentPackageName: 'com.example.PhotoPin',
+                    ),
+                  ],
+                ),
               ),
             ),
+
+            // ───── GREY OVERLAY ON SPOTLIGHTS (DARK MODE ONLY) ─────
+            if (isDark)
+              IgnorePointer(
+                child: ClipPath(
+                  clipper: _SpotlightClipper(
+                    mapController: _mapController,
+                    memories: memories,
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Container(
+                    color: Colors.grey.withOpacity(0.25),
+                  ),
+                ),
+              ),
 
             // ───── RED DOTS ─────
             RedDotsOverlay(
@@ -313,6 +365,58 @@ class _SpotlightClipper extends CustomClipper<ui.Path> {
         ),
       );
     }
+
+    return path;
+  }
+
+  @override
+  bool shouldReclip(_) => true;
+}
+
+// ───────────────────────── INVERSE SPOTLIGHT CLIPPER ─────────────────────────
+
+class _InverseSpotlightClipper extends CustomClipper<ui.Path> {
+  final MapController mapController;
+  final List<Memory> memories;
+
+  _InverseSpotlightClipper({
+    required this.mapController,
+    required this.memories,
+  });
+
+  @override
+  ui.Path getClip(Size size) {
+    final camera = mapController.camera;
+
+    // Base values
+    const double baseRadius = 60;
+    const double baseZoom = 17;
+
+    // Zoom-normalized radius
+    final scale = math.pow(2, camera.zoom - baseZoom).toDouble();
+
+    // Clamp radius to reasonable min/max
+    final radius = (baseRadius * scale).clamp(20.0, 140.0);
+
+    // Start with full screen rectangle
+    final path = ui.Path()
+      ..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
+
+    // Subtract circles for each memory (creates cutouts)
+    for (final m in memories) {
+      final p = camera.latLngToScreenPoint(
+        LatLng(m.lat, m.lng),
+      );
+      path.addOval(
+        Rect.fromCircle(
+          center: Offset(p.x.toDouble(), p.y.toDouble()),
+          radius: radius,
+        ),
+      );
+    }
+
+    // Use even-odd fill rule to create inverse effect
+    path.fillType = ui.PathFillType.evenOdd;
 
     return path;
   }

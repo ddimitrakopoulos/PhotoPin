@@ -25,6 +25,40 @@ class MemoriesScreen extends StatelessWidget {
 
         final List<Memory> memories = controller.memories;
 
+        // Show empty state if no memories
+        if (memories.isEmpty) {
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.photo_library_outlined,
+                  size: 80,
+                  color: Colors.grey,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'No memories yet',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Tap the camera button to add your first memory',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          );
+        }
+
         return SafeArea(
           bottom: false,
           child: Padding(

@@ -21,7 +21,10 @@ void main() async {
     overlays: [],
   );
   
+  // Initialize theme controller and load saved preference
   final themeController = ThemeController();
+  await themeController.loadTheme();
+  
   runApp(PhotoPinApp(themeController: themeController));
 }
 

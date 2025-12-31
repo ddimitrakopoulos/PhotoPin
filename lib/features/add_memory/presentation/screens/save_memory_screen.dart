@@ -5,6 +5,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 import '../../../memories/presentation/controllers/memories_controller.dart';
 import '../../../memories/domain/memory.dart';
@@ -26,6 +27,50 @@ class SaveMemoryScreen extends StatefulWidget {
 class _SaveMemoryScreenState extends State<SaveMemoryScreen> {
   final captionController = TextEditingController();
   bool _saving = false;
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+  bool _speechAvailable = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _speech = stt.SpeechToText();
+    _initSpeech();
+  }
+
+  Future<void> _initSpeech() async {
+    _speechAvailable = await _speech.initialize(
+      onError: (error) => print('Speech recognition error: $error'),
+      onStatus: (status) => print('Speech recognition status: $status'),
+    );
+    setState(() {});
+  }
+
+  void _startListening() async {
+    if (!_speechAvailable) return;
+    
+    await _speech.listen(
+      onResult: (result) {
+        setState(() {
+          captionController.text = result.recognizedWords;
+        });
+      },
+    );
+    setState(() => _isListening = true);
+  }
+
+  void _stopListening() async {
+    await _speech.stop();
+    setState(() => _isListening = false);
+  }
+
+  void _toggleListening() {
+    if (_isListening) {
+      _stopListening();
+    } else {
+      _startListening();
+    }
+  }
 
   Future<Position> _getPosition() async {
     bool enabled = await Geolocator.isLocationServiceEnabled();
@@ -118,6 +163,7 @@ class _SaveMemoryScreenState extends State<SaveMemoryScreen> {
   @override
   void dispose() {
     captionController.dispose();
+    _speech.stop();
     super.dispose();
   }
 
@@ -201,30 +247,48 @@ class _SaveMemoryScreenState extends State<SaveMemoryScreen> {
                     ),
                   ],
                 ),
-                child: TextField(
-                  controller: captionController,
-                  maxLines: 1,
-                  style: TextStyle(
-                    color: isDark ? Colors.white : const Color(0xFF1E1E1E),
-                    fontSize: 32,
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w400,
-                    height: 1.25,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Add a caption ...',
-                    hintStyle: TextStyle(
-                      color: isDark 
-                          ? Colors.white.withOpacity(0.6) 
-                          : const Color(0xFF1E1E1E).withOpacity(0.6),
-                      fontSize: 32,
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w400,
-                      height: 1.25,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: captionController,
+                        maxLines: 1,
+                        style: TextStyle(
+                          color: isDark ? Colors.white : const Color(0xFF1E1E1E),
+                          fontSize: 32,
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.w400,
+                          height: 1.25,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Add a caption ...',
+                          hintStyle: TextStyle(
+                            color: isDark 
+                                ? Colors.white.withOpacity(0.6) 
+                                : const Color(0xFF1E1E1E).withOpacity(0.6),
+                            fontSize: 32,
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w400,
+                            height: 1.25,
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        ),
+                      ),
                     ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  ),
+                    // Microphone button
+                    IconButton(
+                      icon: Icon(
+                        _isListening ? Icons.mic : Icons.mic_none,
+                        color: _isListening 
+                            ? const Color(0xFFFF5A5F)
+                            : (isDark ? Colors.white70 : Colors.black54),
+                        size: 28,
+                      ),
+                      onPressed: _speechAvailable ? _toggleListening : null,
+                      padding: const EdgeInsets.all(8),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 24),

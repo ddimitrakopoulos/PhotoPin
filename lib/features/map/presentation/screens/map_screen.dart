@@ -46,12 +46,6 @@ class _MapScreenState extends State<MapScreen> {
       if (event is MapEventMoveStart &&
           event.source != MapEventSource.mapController) {
         _followMe = false;
-      }
-      // Rebuild on map events to update overlay positions
-      if (event is MapEventMove || 
-          event is MapEventRotate || 
-          event is MapEventFlingAnimationEnd ||
-          event is MapEventDoubleTapZoomEnd) {
         if (mounted) setState(() {});
       }
     });
@@ -197,98 +191,121 @@ class _MapScreenState extends State<MapScreen> {
             ),
 
             // ───── GREY OVERLAY (EVERYWHERE EXCEPT SPOTLIGHTS) ─────
-            IgnorePointer(
-              child: ClipPath(
-                clipper: _InverseSpotlightClipper(
-                  mapController: _mapController,
-                  memories: memories,
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: Container(
-                  color: isDark 
-                      ? Colors.black.withOpacity(0.6)  // Dark mode: nearly black for high contrast
-                      : Colors.grey.withOpacity(0.6),   // Light mode: medium grey
-                ),
-              ),
+            StreamBuilder(
+              stream: _mapController.mapEventStream,
+              builder: (context, snapshot) {
+                return IgnorePointer(
+                  child: ClipPath(
+                    clipper: _InverseSpotlightClipper(
+                      mapController: _mapController,
+                      memories: memories,
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Container(
+                      color: isDark 
+                          ? Colors.black.withOpacity(0.6)
+                          : Colors.grey.withOpacity(0.6),
+                    ),
+                  ),
+                );
+              },
             ),
 
             // ───── NORMAL MAP (VISIBLE ONLY INSIDE SPOTLIGHTS) ─────
-            ClipPath(
-              clipper: _SpotlightClipper(
-                mapController: _mapController,
-                memories: memories,
-              ),
-              child: ColorFiltered(
-                colorFilter: isDark 
-                  ? const ui.ColorFilter.matrix([
-                      // Dark mode: High contrast + High saturation
-                      2.5, -0.75, -0.75, 0, -20,
-                      -0.75, 2.5, -0.75, 0, -20,
-                      -0.75, -0.75, 2.5, 0, -20,
-                      0, 0, 0, 1, 0,
-                    ])
-                  : const ui.ColorFilter.matrix([
-                      // Light mode: High saturation only
-                      2.0, -0.5, -0.5, 0, 0,
-                      -0.5, 2.0, -0.5, 0, 0,
-                      -0.5, -0.5, 2.0, 0, 0,
-                      0, 0, 0, 1, 0,
-                    ]),
-                child: FlutterMap(
-                  mapController: _mapController,
-                  options: const MapOptions(),
-                  children: [
-                    TileLayer(
-                      urlTemplate:
-                          "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-                      userAgentPackageName: 'com.example.PhotoPin',
-                      maxNativeZoom: 19,
-                      // Performance optimizations
-                      tileProvider: NetworkTileProvider(),
-                      keepBuffer: 2,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // ───── GREY OVERLAY ON SPOTLIGHTS (DARK MODE ONLY) ─────
-            if (isDark)
-              IgnorePointer(
-                child: ClipPath(
+            StreamBuilder(
+              stream: _mapController.mapEventStream,
+              builder: (context, snapshot) {
+                return ClipPath(
                   clipper: _SpotlightClipper(
                     mapController: _mapController,
                     memories: memories,
                   ),
-                  clipBehavior: Clip.antiAlias,
-                  child: Container(
-                    color: Colors.grey.withOpacity(0.25),
+                  child: ColorFiltered(
+                    colorFilter: isDark 
+                      ? const ui.ColorFilter.matrix([
+                          // Dark mode: High contrast + High saturation
+                          2.5, -0.75, -0.75, 0, -20,
+                          -0.75, 2.5, -0.75, 0, -20,
+                          -0.75, -0.75, 2.5, 0, -20,
+                          0, 0, 0, 1, 0,
+                        ])
+                      : const ui.ColorFilter.matrix([
+                          // Light mode: High saturation only
+                          2.0, -0.5, -0.5, 0, 0,
+                          -0.5, 2.0, -0.5, 0, 0,
+                          -0.5, -0.5, 2.0, 0, 0,
+                          0, 0, 0, 1, 0,
+                        ]),
+                    child: FlutterMap(
+                      mapController: _mapController,
+                      options: const MapOptions(),
+                      children: [
+                        TileLayer(
+                          urlTemplate:
+                              "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                          userAgentPackageName: 'com.example.PhotoPin',
+                          maxNativeZoom: 19,
+                          // Performance optimizations
+                          tileProvider: NetworkTileProvider(),
+                          keepBuffer: 2,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                );
+              },
+            ),
+
+            // ───── GREY OVERLAY ON SPOTLIGHTS (DARK MODE ONLY) ─────
+            if (isDark)
+              StreamBuilder(
+                stream: _mapController.mapEventStream,
+                builder: (context, snapshot) {
+                  return IgnorePointer(
+                    child: ClipPath(
+                      clipper: _SpotlightClipper(
+                        mapController: _mapController,
+                        memories: memories,
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: Container(
+                        color: Colors.grey.withOpacity(0.25),
+                      ),
+                    ),
+                  );
+                },
               ),
 
             // ───── RED DOTS ─────
-            RedDotsOverlay(
-              mapController: _mapController,
-              memories: memories,
-              onTap: _onMemoryTap,
+            StreamBuilder(
+              stream: _mapController.mapEventStream,
+              builder: (context, snapshot) {
+                return RedDotsOverlay(
+                  mapController: _mapController,
+                  memories: memories,
+                  onTap: _onMemoryTap,
+                );
+              },
             ),
 
             // ───── USER LOCATION ─────
             if (_currentPosition != null)
-              Builder(builder: (_) {
-                final p = _mapController.camera
-                    .latLngToScreenPoint(_currentPosition!);
-                return Positioned(
-                  left: p.x - 25,
-                  top: p.y - 50,
-                  child: const Icon(
-                    Icons.location_on,
-                    color: Color(0xFFFF5A5F),
-                    size: 50,
-                  ),
-                );
-              }),
+              StreamBuilder(
+                stream: _mapController.mapEventStream,
+                builder: (context, snapshot) {
+                  final p = _mapController.camera
+                      .latLngToScreenPoint(_currentPosition!);
+                  return Positioned(
+                    left: p.x - 25,
+                    top: p.y - 50,
+                    child: const Icon(
+                      Icons.location_on,
+                      color: Color(0xFFFF5A5F),
+                      size: 50,
+                    ),
+                  );
+                },
+              ),
 
             // ───── LOCATION BUTTON ─────
             Positioned(

@@ -483,7 +483,7 @@ class RedDotsOverlay extends StatelessWidget {
 
   // Group memories that are close together
   List<List<Memory>> _clusterMemories() {
-    const double clusterDistanceThreshold = 50.0; // pixels
+    const double clusterDistanceThreshold = 30.0; // pixels (reduced from 50)
     final List<List<Memory>> clusters = [];
     final Set<String> processed = {};
 

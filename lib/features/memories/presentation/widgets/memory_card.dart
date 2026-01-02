@@ -64,7 +64,11 @@ class MemoryCard extends StatelessWidget {
               padding: const EdgeInsets.only(left: 9, top: 12, bottom: 12),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(0),
-                child: _memoryImage(memory),
+                child: SizedBox(
+                  width: 120,
+                  height: 120,
+                  child: _memoryImage(memory),
+                ),
               ),
             ),
             // Right side content (Date/Location box + Caption)

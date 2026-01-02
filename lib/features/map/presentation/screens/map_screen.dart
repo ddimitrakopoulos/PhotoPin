@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -480,24 +481,193 @@ class RedDotsOverlay extends StatelessWidget {
     required this.onTap,
   });
 
+  // Group memories that are close together
+  List<List<Memory>> _clusterMemories() {
+    const double clusterDistanceThreshold = 50.0; // pixels
+    final List<List<Memory>> clusters = [];
+    final Set<String> processed = {};
+
+    for (final memory in memories) {
+      if (processed.contains(memory.id)) continue;
+
+      final cluster = <Memory>[memory];
+      processed.add(memory.id);
+
+      final p1 = mapController.camera.latLngToScreenPoint(
+        LatLng(memory.lat, memory.lng),
+      );
+
+      // Find all nearby memories
+      for (final other in memories) {
+        if (processed.contains(other.id)) continue;
+
+        final p2 = mapController.camera.latLngToScreenPoint(
+          LatLng(other.lat, other.lng),
+        );
+
+        final distance = math.sqrt(
+          math.pow(p1.x - p2.x, 2) + math.pow(p1.y - p2.y, 2),
+        );
+
+        if (distance <= clusterDistanceThreshold) {
+          cluster.add(other);
+          processed.add(other.id);
+        }
+      }
+
+      clusters.add(cluster);
+    }
+
+    return clusters;
+  }
+
+  void _showMemoryPicker(BuildContext context, List<Memory> clusterMemories) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 400, maxHeight: 500),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Select Memory',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ),
+              const Divider(),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: clusterMemories.length,
+                  itemBuilder: (context, index) {
+                    final memory = clusterMemories[index];
+                    return ListTile(
+                      leading: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: _buildMemoryThumbnail(memory),
+                      ),
+                      title: Text(
+                        memory.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(
+                        memory.location,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        onTap(memory);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMemoryThumbnail(Memory memory) {
+    // User-captured image (file path)
+    if (memory.imagePath != null && memory.imagePath!.isNotEmpty) {
+      final imageFile = File(memory.imagePath!);
+      
+      if (imageFile.existsSync()) {
+        return Image.file(
+          imageFile,
+          width: 50,
+          height: 50,
+          fit: BoxFit.cover,
+          cacheWidth: 100, // Performance: cache at 2x size
+          cacheHeight: 100,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              width: 50,
+              height: 50,
+              color: Colors.grey.shade300,
+              child: Icon(Icons.broken_image, color: Colors.grey.shade600, size: 24),
+            );
+          },
+        );
+      } else {
+        return Container(
+          width: 50,
+          height: 50,
+          color: Colors.grey.shade300,
+          child: Icon(Icons.image_not_supported, color: Colors.grey.shade600, size: 24),
+        );
+      }
+    }
+    
+    // Asset image
+    return Image.asset(
+      memory.imageAsset,
+      width: 50,
+      height: 50,
+      fit: BoxFit.cover,
+      cacheWidth: 100,
+      cacheHeight: 100,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final clusters = _clusterMemories();
+
     return Stack(
-      children: memories.map((m) {
+      children: clusters.map((cluster) {
+        // Use the first memory's position as the cluster position
+        final representative = cluster.first;
         final p = mapController.camera
-            .latLngToScreenPoint(LatLng(m.lat, m.lng));
+            .latLngToScreenPoint(LatLng(representative.lat, representative.lng));
+
+        final isCluster = cluster.length > 1;
 
         return Positioned(
-          left: p.x - 6,
-          top: p.y - 6,
+          left: p.x - (isCluster ? 12 : 8),
+          top: p.y - (isCluster ? 12 : 8),
           child: GestureDetector(
-            onTap: () => onTap(m),
+            // More lenient tap detection
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              if (isCluster) {
+                _showMemoryPicker(context, cluster);
+              } else {
+                onTap(cluster.first);
+              }
+            },
             child: Container(
-              width: 16,
-              height: 16,
-              decoration: const BoxDecoration(
-                color: Colors.red,
-                shape: BoxShape.circle,
+              // Larger tap target
+              padding: const EdgeInsets.all(8),
+              child: Container(
+                width: isCluster ? 24 : 16,
+                height: isCluster ? 24 : 16,
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                  border: isCluster
+                      ? Border.all(color: Colors.white, width: 2)
+                      : null,
+                ),
+                child: isCluster
+                    ? Center(
+                        child: Text(
+                          '${cluster.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      )
+                    : null,
               ),
             ),
           ),

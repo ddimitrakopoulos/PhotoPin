@@ -83,55 +83,100 @@ class _SaveMemoryScreenState extends State<SaveMemoryScreen> {
   }
 
   Future<Position> _getPosition() async {
-    bool enabled = await Geolocator.isLocationServiceEnabled();
-    if (!enabled) {
-      await Geolocator.openLocationSettings();
-    }
+    try {
+      bool enabled = await Geolocator.isLocationServiceEnabled();
+      if (!enabled) {
+        await Geolocator.openLocationSettings();
+        // Check again after opening settings
+        enabled = await Geolocator.isLocationServiceEnabled();
+        if (!enabled) {
+          throw Exception('Location services are disabled');
+        }
+      }
 
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
-      permission = await Geolocator.requestPermission();
-    }
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied ||
+            permission == LocationPermission.deniedForever) {
+          throw Exception('Location permission denied');
+        }
+      }
 
-    return Geolocator.getCurrentPosition();
+      return await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 10),
+        ),
+      );
+    } catch (e) {
+      throw Exception('Failed to get location: $e');
+    }
   }
 
   Future<String> _reverseGeocode(double lat, double lng) async {
-    final placemarks = await placemarkFromCoordinates(lat, lng);
-    final place = placemarks.first;
+    try {
+      final placemarks = await placemarkFromCoordinates(lat, lng);
+      
+      if (placemarks.isEmpty) {
+        return 'Unknown location';
+      }
+      
+      final place = placemarks.first;
 
-    final locality = place.locality;
-    final administrativeArea = place.administrativeArea;
-    final country = place.country;
+      final locality = place.locality;
+      final administrativeArea = place.administrativeArea;
+      final country = place.country;
 
-    return [
-      if (locality != null && locality.isNotEmpty) locality,
-      if (administrativeArea != null && administrativeArea.isNotEmpty)
-        administrativeArea,
-      if (country != null && country.isNotEmpty) country,
-    ].join(', ');
+      final locationParts = [
+        if (locality != null && locality.isNotEmpty) locality,
+        if (administrativeArea != null && administrativeArea.isNotEmpty)
+          administrativeArea,
+        if (country != null && country.isNotEmpty) country,
+      ];
+      
+      return locationParts.isNotEmpty ? locationParts.join(', ') : 'Unknown location';
+    } catch (e) {
+      // Return coordinates if geocoding fails
+      return '${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}';
+    }
   }
 
   Future<String> _copyImageToPermanentStorage(File imageFile) async {
-    // Get app documents directory
-    final directory = await getApplicationDocumentsDirectory();
-    final imagesDir = Directory(path.join(directory.path, 'images'));
-    
-    // Create images directory if it doesn't exist
-    if (!await imagesDir.exists()) {
-      await imagesDir.create(recursive: true);
+    try {
+      // Verify source file exists
+      if (!await imageFile.exists()) {
+        throw Exception('Source image file does not exist');
+      }
+      
+      // Get app documents directory
+      final directory = await getApplicationDocumentsDirectory();
+      final imagesDir = Directory(path.join(directory.path, 'images'));
+      
+      // Create images directory if it doesn't exist
+      if (!await imagesDir.exists()) {
+        await imagesDir.create(recursive: true);
+      }
+      
+      // Create unique filename with timestamp
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final extension = path.extension(imageFile.path);
+      final fileName = 'memory_$timestamp$extension';
+      final permanentPath = path.join(imagesDir.path, fileName);
+      
+      // Copy file to permanent location
+      final copiedFile = await imageFile.copy(permanentPath);
+      
+      // Verify the copy succeeded
+      if (!await copiedFile.exists()) {
+        throw Exception('Failed to verify copied file exists');
+      }
+      
+      return permanentPath;
+    } catch (e) {
+      throw Exception('Error copying image to permanent storage: $e');
     }
-    
-    // Create unique filename with timestamp
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final extension = path.extension(imageFile.path);
-    final fileName = 'memory_$timestamp$extension';
-    final permanentPath = path.join(imagesDir.path, fileName);
-    
-    // Copy file to permanent location
-    await imageFile.copy(permanentPath);
-    return permanentPath;
   }
 
   Future<void> _saveMemory() async {
@@ -144,6 +189,12 @@ class _SaveMemoryScreenState extends State<SaveMemoryScreen> {
       
       // Copy image to permanent storage
       final permanentImagePath = await _copyImageToPermanentStorage(widget.imageFile);
+      
+      // Verify the file was copied successfully
+      final copiedFile = File(permanentImagePath);
+      if (!await copiedFile.exists()) {
+        throw Exception('Failed to copy image to permanent storage');
+      }
 
       final caption = captionController.text.trim();
 
@@ -159,10 +210,26 @@ class _SaveMemoryScreenState extends State<SaveMemoryScreen> {
         lng: pos.longitude,
       );
 
+      // Save memory and WAIT for completion
       await widget.memoriesController.addMemory(memory);
+      
+      // Add a small delay to ensure SharedPreferences write completes
+      await Future.delayed(const Duration(milliseconds: 100));
 
       if (!mounted) return;
       Navigator.of(context).pop(); // close SaveMemoryScreen
+    } catch (e) {
+      // Handle errors gracefully
+      if (mounted) {
+        setState(() => _saving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save memory: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() => _saving = false);

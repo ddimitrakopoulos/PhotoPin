@@ -24,7 +24,17 @@ class MemoryLocalDataSource {
   Future<void> saveMemories(List<Memory> memories) async {
     final prefs = await SharedPreferences.getInstance();
     final raw = jsonEncode(memories.map((m) => m.toJson()).toList());
-    await prefs.setString(_keyMemories, raw);
+    
+    // Use setString and verify the save succeeded
+    final success = await prefs.setString(_keyMemories, raw);
+    
+    if (!success) {
+      throw Exception('Failed to save memories to SharedPreferences');
+    }
+    
+    // Force commit on Android (especially important for Samsung devices)
+    // This ensures the data is written to disk immediately
+    await prefs.reload();
   }
 
   /// Start with empty memories - user adds their own

@@ -96,14 +96,18 @@ class MemoryCard extends StatelessWidget {
                                 height: 14,
                               ),
                               const SizedBox(width: 6),
-                              Text(
-                                _formatDate(memory.date),
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontSize: 14,
-                                  fontFamily: 'Inter',
-                                  fontWeight: FontWeight.w400,
+                              Flexible(
+                                child: Text(
+                                  _formatDate(memory.date),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontSize: 14,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w400,
+                                  ),
                                 ),
                               ),
                             ],

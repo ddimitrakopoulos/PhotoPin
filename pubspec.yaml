@@ -1,4 +1,4 @@
-name: PhotoPin
+name: photo_pin
 description: "Your Memories ... Mapped"
 publish_to: 'none'
 environment:

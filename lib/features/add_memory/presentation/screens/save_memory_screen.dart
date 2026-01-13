@@ -43,8 +43,28 @@ class _SaveMemoryScreenState extends State<SaveMemoryScreen> {
     
     _speech = stt.SpeechToText();
     _speechAvailable = await _speech!.initialize(
-      onError: (error) => print('Speech recognition error: $error'),
-      onStatus: (status) => print('Speech recognition status: $status'),
+      onError: (error) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Speech recognition error: ${error.errorMsg}'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      },
+      onStatus: (status) {
+        if (status == 'notAvailable' && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Speech recognition not available on this device'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      },
     );
     _speechInitialized = true;
     if (mounted) setState(() {});

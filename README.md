@@ -3,7 +3,8 @@
 ## Your Memories ... Mapped.
 
 A university project 
-<<<<<<< Updated upstream
+<<<<<< Updated upstream
 =======
 
->>>>>>> Stashed changes
+>>>>>> Stashed changes
+

@@ -101,6 +101,7 @@
    - Εκτελέστε `sudo xcodebuild -runFirstLaunch`
 
 ### Βήματα Εγκατάστασης
+## Μπορείτε να κατεβάσετε το **latests realese** από τα **releases** ή να χτίσετε μόνοι σας το apk ακολουθώντας τα ακόλουθα βήματα
 
 1. **Clone το repository** (ή κατεβάστε το ZIP)
    ```bash
@@ -247,3 +248,4 @@ lib/
 ---
 
 <p align="center">Made with Flutter</p>
+

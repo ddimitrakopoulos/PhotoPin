@@ -25,14 +25,14 @@
 ## Screenshots
 
 <p align="center">
-  <img src="screenshots/map_screen_1.png" alt="Map Screen 1" width="220"/>
-  <img src="screenshots/map_screen_2.png" alt="Map Screen 2" width="220"/>
-  <img src="screenshots/memories_list_1.png" alt="Memories List 1" width="220"/>
+  <img src="screenshots/map_screen_1.jpg" alt="Map Screen 1" width="220"/>
+  <img src="screenshots/map_screen_2.jpg" alt="Map Screen 2" width="220"/>
+  <img src="screenshots/memories_list_1.jpg" alt="Memories List 1" width="220"/>
 </p>
 
 <p align="center">
-  <img src="screenshots/memories_list_2.png" alt="Memories List 2" width="220"/>
-  <img src="screenshots/photo_detail.png" alt="Photo Detail" width="220"/>
+  <img src="screenshots/memories_list_2.jpg" alt="Memories List 2" width="220"/>
+  <img src="screenshots/photo_detail.jpg" alt="Photo Detail" width="220"/>
 </p>
 
 ---
